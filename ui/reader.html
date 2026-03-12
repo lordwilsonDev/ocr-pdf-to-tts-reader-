@@ -98,6 +98,11 @@
             startReading();
         };
 
+        document.getElementById('btn-stop').onclick = async () => {
+            await fetch('/interrupt');
+            document.getElementById('reading-status').textContent = 'PAUSED';
+        };
+
         const agentInput = document.getElementById('agent-input');
         agentInput.onkeydown = async (e) => {
             if (e.key === 'Enter') {

@@ -1,63 +1,62 @@
-#!/usr/bin/env python3
-"""
-TTS Engine — Adaptive Prosody and Emphasis Mapping
-==================================================
-
-Converts logical text into audio-equivalent text with 'Cognitive Pauses'.
-Prepares text for synthesis with speed markings.
-"""
-
-import time
-from typing import List
+from typing import List, Dict
 from .ocr_engine import TextBlock
+import time
+
+class EmotionGate:
+    """Maps visual metadata to acoustic prosody parameters."""
+    
+    @staticmethod
+    def get_prosody(block: TextBlock) -> Dict[str, Any]:
+        params = {
+            "rate": 1.0,      # 1.0 = normal
+            "pitch": 0,      # 0 = normal
+            "volume": 0.8,   # 0.8 = normal
+            "pause": 0.2     # seconds
+        }
+        
+        # 1. Header Logic
+        if block.is_header:
+            params["rate"] = 0.85
+            params["pitch"] = 5
+            params["volume"] = 1.0
+            params["pause"] = 0.8
+            
+        # 2. All CAPS (Urgency/Emphasis)
+        elif block.text.isupper() and len(block.text) > 3:
+            params["rate"] = 1.1
+            params["pitch"] = 2
+            params["volume"] = 0.95
+            
+        # 3. Punctuation Damping
+        if block.text.endswith((".", "!", "?")):
+            params["pause"] = 0.6
+        elif block.text.endswith(","):
+            params["pause"] = 0.3
+            
+        return params
 
 class AdaptiveTTS:
-    """Simulates a TTS engine with emotional/prosody awareness."""
-
-    def __init__(self, base_rate: int = 200):
-        self.base_rate = base_rate
-
-    def prep_speech(self, text: str) -> str:
-        """
-        Injects SSML-like hints or punctuation pauses for better flow.
-        - Caps = Emphasis (Slower, Louder)
-        - Short sentences = Punchy
-        - Long sentences = Measured
-        """
-        # Emphasize shouting
-        words = text.split()
-        prepped = []
-        for w in words:
-            if w.isupper() and len(w) > 1:
-                prepped.append(f"[EMPHASIS: {w}]")
-            else:
-                prepped.append(w)
+    """TTS Engine with Adaptive Prosody implementation."""
+    
+    def __init__(self):
+        self.gate = EmotionGate()
         
-        final_text = " ".join(prepped)
-        
-        # Add 'Cognitive Pauses' at punctuation
-        final_text = final_text.replace(". ", ". [PAUSE 500ms] ")
-        final_text = final_text.replace(": ", ": [PAUSE 300ms] ")
-        
-        return final_text
-
     def speak_simulated(self, blocks: List[TextBlock]):
-        """Simulates the manifestation of speech with timing."""
-        print(f"\n🎙️  SOVEREIGN WHISPER READER — STARTING PLAYBACK\n")
+        """Runs the manifestation pipeline with prosody injection."""
+        print("\n🎧 STARTING ADAPTIVE PLAYBACK...")
         
         for b in blocks:
-            # Detect density/speed adjustment
-            # More area / few words = slower (Header)
-            word_count = len(b.text.split())
-            speed_factor = 1.0
-            if b.h > 30: speed_factor = 0.8 # Slow down for headers
+            prosody = self.gate.get_prosody(b)
             
-            processed_text = self.prep_speech(b.text)
+            # Simulated manifestation
+            meta = f"[R:{prosody['rate']} P:{prosody['pitch']} V:{prosody['volume']}]"
             
-            print(f"  [Speed: {speed_factor}x] >> {processed_text}")
-            # Simulate real-time speech delay
-            time.sleep(word_count * 0.1 * speed_factor)
-
-if __name__ == "__main__":
-    tts = AdaptiveTTS()
-    print(tts.prep_speech("ABSTRACT: This is IMPORTANT. Please listen carefully."))
+            if b.is_header:
+                print(f"📣 {meta} >> {b.text.upper()}")
+            elif b.text.isupper():
+                print(f"🔊 {meta} >> {b.text}")
+            else:
+                print(f"🗣️ {meta} >> {b.text}")
+                
+            # Simulate real-time pause
+            time.sleep(0.1) # Accelerated for demo, but logic is there

@@ -56,9 +56,19 @@ async def query_agent(q: str):
     response = agent.query(q)
     return {"answer": response}
 
+@app.get("/interrupt")
+async def interrupt_reading():
+    agent.interrupt()
+    return {"status": "paused"}
+
+@app.get("/resume")
+async def resume_reading():
+    agent.resume()
+    return {"status": "resumed"}
+
 @app.get("/status")
 async def get_status():
-    return {"status": agent.status}
+    return {"status": agent.status, "index": agent.current_index}
 
 # Mount UI
 app.mount("/", StaticFiles(directory="ui", html=True), name="ui")

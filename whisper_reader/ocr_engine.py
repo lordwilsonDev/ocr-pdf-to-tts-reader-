@@ -1,14 +1,8 @@
-#!/usr/bin/env python3
-"""
-OCR Engine — Visual Chunking and High-Fidelity Text Extraction
-==============================================================
-
-Handles the extraction of text from images/PDFs with visual metadata.
-This engine is designed to be 'plug-and-play' for Tesseract/EasyOCR.
-"""
-
-from typing import List, Dict, Any
+import pytesseract
+from PIL import Image
 from dataclasses import dataclass
+from typing import List
+import os
 
 @dataclass
 class TextBlock:
@@ -18,49 +12,56 @@ class TextBlock:
     w: int
     h: int
     confidence: float
-    page: int = 1
-    
-    @property
-    def area(self) -> int:
-        return self.w * self.h
+    font_size: int = 12
+    is_header: bool = False
 
-class VisualChunker:
-    """Simulates/Wraps OCR extraction with coordinate metadata."""
+class OCREngine:
+    """The Tesseract-based Precision Ingestion Engine."""
     
-    def __init__(self, provider: str = "tesseract"):
-        self.provider = provider
+    def __init__(self):
+        # Tesseract usually found automatically on path via Homebrew
+        pass
+
+    def extract_from_image(self, image_path: str) -> List[TextBlock]:
+        """Extracts text with raw geometric coordinates."""
+        print(f"🔍 OCR SCANNING: {os.path.basename(image_path)}")
+        img = Image.open(image_path)
         
-    def extract(self, source: Any) -> List[TextBlock]:
-        """
-        Extracts raw text blocks. In a real world, this calls Tesseract/EasyOCR.
-        For SWR demo, we simulate a complex document structure.
-        """
-        # Simulation: A 2-column academic paper with a sidebar
-        return [
-            # Header
-            TextBlock("The Future of Sovereign AI Systems", 100, 50, 600, 40, 0.99),
+        # Get raw data (TSV format logically)
+        data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
+        
+        blocks = []
+        n_boxes = len(data['text'])
+        for i in range(n_boxes):
+            text = data['text'][i].strip()
+            if not text:
+                continue
+                
+            conf = float(data['conf'][i])
+            if conf < 10: # Filter noise
+                continue
+                
+            # Create block
+            # For simplicity in this v1, we group by word or line?
+            # Tesseract gives data at level 5 (word).
+            # We will return words and let the Layout engine group them.
+            block = TextBlock(
+                text=text,
+                x=data['left'][i],
+                y=data['top'][i],
+                w=data['width'][i],
+                h=data['height'][i],
+                confidence=conf,
+                is_header=data['height'][i] > 25 # Simple header heuristic
+            )
+            blocks.append(block)
             
-            # Left Column (Top)
-            TextBlock("Abstract: This paper explores the transition from centralized", 100, 120, 300, 20, 0.98),
-            TextBlock("cloud infrastructures to local-first, agent-driven architectures.", 100, 145, 300, 20, 0.97),
-            
-            # Right Column (Top)
-            TextBlock("Introduction: The original sin of cloud computing is the", 450, 120, 300, 20, 0.98),
-            TextBlock("systemic chokepoint created by vendor lock-in strategies.", 450, 145, 300, 20, 0.96),
-            
-            # Left Column (Bottom)
-            TextBlock("Methodology: We implemented a recursive DAG compiler", 100, 200, 300, 20, 0.95),
-            
-            # Sidebar (Far Right)
-            TextBlock("SIDEBAR: Related Reading", 800, 150, 150, 20, 0.99),
-            TextBlock("1. The Black Swan Project", 800, 180, 150, 20, 0.98),
-            
-            # Right Column (Bottom)
-            TextBlock("Conclusion: Sovereignty is a technical imperative.", 450, 200, 300, 20, 0.97),
-        ]
+        return blocks
 
-if __name__ == "__main__":
-    engine = VisualChunker()
-    blocks = engine.extract("demo.pdf")
-    for b in blocks:
-        print(f"[{b.x},{b.y}] {b.text[:30]}...")
+class VisualChunker: 
+    """Compatibility wrapper for the Agent."""
+    def __init__(self):
+        self.engine = OCREngine()
+        
+    def extract(self, image_path: str) -> List[TextBlock]:
+        return self.engine.extract_from_image(image_path)
