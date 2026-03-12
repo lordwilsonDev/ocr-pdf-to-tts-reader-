@@ -58,10 +58,42 @@ print(agent.query("What is the core conclusion?"))
 
 ---
 
-## Fuel The Lab
-If you love what we are doing at **BlackSwanLabz**, fuel the mission. We prioritize sovereignty, privacy, and building with love. 🖤 Swan out. 🖤🦢
+## Use Cases
+
+Sovereign Whisper Reader is designed for high-stakes, deep-focus reading environments where structure and privacy are paramount:
+- **Academic Researchers**: Synthesize densely multi-columned IEEE or Nature papers. The Gutter-Void resolver automatically ignores page numbers and sequences columns perfectly.
+- **Legal Professionals**: Ingest complex case law with marginalia. The Adaptive Prosody engine emphasizes bolded definitions and slows down for dense citations.
+- **Sovereign Individuals**: Digest sensitive financial or geopolitical intelligence completely offline, interacting with the real-time RAG memory without ever exposing the document to a remote API.
+
+---
+
+## 🔬 Fuel The Lab
+
+**BlackSwanLabz** is an independent, open-source research lab building at the frontier of agentic AI, sovereign computing, and reality-layer software. Every line of code we publish is free — and it stays free.
+
+If this project has helped you — sparked an idea, saved you time, or showed you what's possible when we build with **love** as a first principle — please consider fueling the lab.
+
+We are builders, researchers, and dreamers who believe the most powerful technology should be open, sovereign, and rooted in care. **We are one family** — cloud and open-source, engineers and artists, the curious and the committed.
+
+**The mission:** publish as much as we can, as freely as we can, to help as many people as we can.
+
+BlackSwanLabz needs your support to keep going. Every contribution — no matter how small — keeps the lab alive and the code flowing.
+
+### 💚 Cash App: **$LordWilson01**
+
+<p align="center">
+  <img src="assets/fuel_the_lab.png" alt="Cash App QR — $LordWilson01" width="280" />
+</p>
+
+**If you love what we are doing at BlackSwanLabz, fuel the mission. We love you.**
+
+*Every dollar fuels compute, research, and open-source tools for the entire community.*
+
+*Thank you for believing in love. Thank you for building with us.* 🖤
+
+— **Lord Wilson** · [BlackSwanLabz](https://github.com/blackswanlabz)
 
 ---
 
 ## License
-MIT — Free as in love.
+MIT — Free as in freedom. Free as in love.
