@@ -18,45 +18,42 @@ class LayoutResolver:
 
     def resolve(self, blocks: List[TextBlock]) -> List[TextBlock]:
         """
-        Sorts blocks semantically:
-        1. Identify distinct columns based on 'x' alignment.
-        2. Group blocks into columns.
-        3. Sort columns by 'x' (left to right).
-        4. Sort blocks within columns by 'y' (top to bottom).
+        Resolves spatial coordinates into logical reading sequences using
+        Gutter-Aware clustering.
         """
         if not blocks:
             return []
 
-        # 1. Identify Column Centers using simple clustering
-        columns_map: Dict[int, List[TextBlock]] = {}
+        # 1. Coordinate Normalization & Header Separation
+        # Blocks with W > 70% of max width are treated as potential headers (full width)
+        max_w = max(b.w for b in blocks)
+        headers = [b for b in blocks if b.w > max_w * 0.7]
+        others = [b for b in blocks if b not in headers]
+
+        # 2. Identify Column Voids
+        # Sort by x and scan for gaps larger than gutter_threshold
+        sorted_others = sorted(others, key=lambda b: b.x)
         
-        # Sort by x first to make clustering easier
-        sorted_x = sorted(blocks, key=lambda b: b.x)
-        
-        current_col_x = sorted_x[0].x
-        columns_map[current_col_x] = []
-        
-        for b in sorted_x:
-            # If this block is significantly further right than the current col x, start new col
-            if abs(b.x - current_col_x) > self.gutter_threshold:
-                current_col_x = b.x
-                columns_map[current_col_x] = []
+        column_groups = []
+        if sorted_others:
+            current_group = [sorted_others[0]]
+            for i in range(1, len(sorted_others)):
+                if sorted_others[i].x - (current_group[-1].x + current_group[-1].w) > self.gutter_threshold:
+                    column_groups.append(current_group)
+                    current_group = [sorted_others[i]]
+                else:
+                    current_group.append(sorted_others[i])
+            column_groups.append(current_group)
             
-            columns_map[current_col_x].append(b)
-            
-        # 2. Sort columns by horizontal position (Header vs Main vs Sidebar)
-        col_keys = sorted(columns_map.keys())
+        # 3. Assemble Logical Sequence
+        resolved_sequence = sorted(headers, key=lambda b: b.y)
         
-        resolved_sequence = []
+        # Sort column groups by their leftmost block's X
+        column_groups.sort(key=lambda g: min(b.x for b in g))
         
-        # 3. Flatten into reading order:
-        # NOTE: We handle 'Headers' (full-width) separately if they span multiple columns
-        # In this simple logic, they'll just be in their own col if aligned left
-        
-        for col_x in col_keys:
-            # Sort blocks within the column by Y (top to bottom)
-            col_blocks = sorted(columns_map[col_x], key=lambda b: b.y)
-            resolved_sequence.extend(col_blocks)
+        for group in column_groups:
+            # Sort blocks within column by Y
+            resolved_sequence.extend(sorted(group, key=lambda b: b.y))
             
         return resolved_sequence
 

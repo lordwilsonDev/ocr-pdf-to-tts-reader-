@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Whisper Reader | BlackSwanLabz</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="cyberpunk-theme">
+    <div class="glow-overlay"></div>
+    
+    <header class="global-hud">
+        <div class="hud-left">
+            <span class="brand">SOVEREIGN WHISPER</span>
+            <span class="version">v1.0.4-BETA</span>
+        </div>
+        <div class="hud-center">
+            <div class="status-indicator">
+                <span class="dot pulse"></span>
+                <span class="label">SWR_UPLINK_ACTIVE</span>
+            </div>
+        </div>
+        <div class="hud-right">
+            <span class="clock" id="utc-clock">00:00:00 UTC</span>
+        </div>
+    </header>
+
+    <main class="main-stage">
+        <section class="upload-zone" id="drop-zone">
+            <div class="matrix-bg"></div>
+            <div class="upload-content">
+                <div class="icon-hex">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                </div>
+                <h2>INGEST DOCUMENT</h2>
+                <p>Drag PDF here or click to uplink to Sovereign Stack</p>
+                <input type="file" id="file-input" hidden accept=".pdf">
+                <button class="btn-primary" onclick="document.getElementById('file-input').click()">SELECT SOURCE</button>
+            </div>
+        </section>
+
+        <section class="document-ledger">
+            <div class="section-header">
+                <h3>RECENT MANIFESTS</h3>
+                <span class="count">0 DOCUMENTS</span>
+            </div>
+            <div class="ledger-table-container">
+                <table class="ledger-table">
+                    <thead>
+                        <tr>
+                            <th>IDENTIFIER</th>
+                            <th>TIMESTAMP</th>
+                            <th>STATUS</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doc-list">
+                        <!-- Documents injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('utc-clock').textContent = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Upload Logic
+        const fileInput = document.getElementById('file-input');
+        fileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            window.location.href = `reader.html?id=${data.id}`;
+        };
+    </script>
+</body>
+</html>

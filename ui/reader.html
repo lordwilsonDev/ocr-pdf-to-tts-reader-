@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reader Interface | SWR</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="cyberpunk-theme">
+    <header class="global-hud">
+        <div class="hud-left">
+            <a href="index.html" class="brand">SWR_READER</a>
+            <span id="doc-title" class="version">LOADING_MANIFEST...</span>
+        </div>
+        <div class="hud-center">
+            <div class="status-indicator">
+                <span class="dot pulse"></span>
+                <span id="reading-status" class="label">ENGINE_IDLE</span>
+            </div>
+        </div>
+        <div class="hud-right">
+            <span class="clock" id="page-counter">PAGE 0/0</span>
+        </div>
+    </header>
+
+    <main class="reader-stage">
+        <section class="viewport-hud" id="content-canvas">
+            <div class="content-canvas" id="text-container">
+                <!-- Text blocks stream here -->
+                <div class="text-block">INITIATING_OCR_SEQUENCE...</div>
+            </div>
+        </section>
+
+        <section class="control-sidebar">
+            <div class="widget">
+                <h4>PROSODY_MATRIX</h4>
+                <div class="prosody-sliders">
+                    <div class="slider-group">
+                        <label><span>WARMTH</span> <span id="val-warmth">0.7</span></label>
+                        <input type="range" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+                    <div class="slider-group">
+                        <label><span>URGENCY</span> <span id="val-urgency">0.4</span></label>
+                        <input type="range" min="0" max="1" step="0.1" value="0.4">
+                    </div>
+                    <div class="slider-group">
+                        <label><span>CLARITY</span> <span id="val-clarity">0.9</span></label>
+                        <input type="range" min="0" max="1" step="0.1" value="0.9">
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <h4>CONTEXTUAL_AGENT</h4>
+                <div class="agent-console">
+                    <div class="history" id="agent-history">
+                        <div>> SWR_AGENT ACTIVE</div>
+                        <div>> STANDING BY FOR CONTEXTUAL QUERIES</div>
+                    </div>
+                    <div class="prompt-line">
+                        <span>></span>
+                        <input type="text" id="agent-input" placeholder="ASK ABOUT DOCUMENT..." autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <h4>PLAYBACK</h4>
+                <div class="playback-btns">
+                    <button class="btn-primary" id="btn-play">START_READING</button>
+                    <button class="btn-primary btn-stop" style="border-color: var(--alert-red); color: var(--alert-red);" id="btn-stop">DAMPEN</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
+
+        async function startReading() {
+            document.getElementById('reading-status').textContent = 'EXTRACTING_TEXT';
+            const res = await fetch(`/read/${docId}`);
+            const data = await res.json();
+            document.getElementById('doc-title').textContent = data.filename;
+            
+            // Start polling status
+            const poller = setInterval(async () => {
+                const sRes = await fetch('/status');
+                const sData = await sRes.json();
+                document.getElementById('reading-status').textContent = sData.status;
+                if (sData.status === 'COMPLETED') clearInterval(poller);
+            }, 1000);
+        }
+
+        document.getElementById('btn-play').onclick = () => {
+            startReading();
+        };
+
+        const agentInput = document.getElementById('agent-input');
+        agentInput.onkeydown = async (e) => {
+            if (e.key === 'Enter') {
+                const q = agentInput.value;
+                agentInput.value = '';
+                
+                const history = document.getElementById('agent-history');
+                history.innerHTML += `<div><span style="color:var(--text-dim)">USER:</span> ${q}</div>`;
+                
+                const res = await fetch(`/query?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                
+                history.innerHTML += `<div><span style="color:var(--accent-primary)">AGENT:</span> ${data.answer}</div>`;
+                history.scrollTop = history.scrollHeight;
+            }
+        };
+    </script>
+</body>
+</html>
