@@ -58,7 +58,20 @@ print(agent.query("What is the core conclusion?"))
 
 ---
 
-## Use Cases
+## 🛠️ Status & Contributing (Fork & Continue)
+
+**Status:** The core cognitive pipeline (Precision Ingestion, Layout Master, Emotion Gate, and RAG) is practically production-ready. 
+
+**This project is open-source.** We are calling on the community to **fork it, run it, and continue the build.** 
+
+Help us expand:
+- **TTS Integrations**: Hook the simulated `Emotion Gate` parameters directly into `pyttsx3`, ElevenLabs, or local Coqui TTS models.
+- **Frontend Tuning**: Polish the Cyberpunk UI and RAG query interface.
+- **Support More Doc Types**: Extend ingestion beyond PDFs.
+
+If you believe in sovereign, localized AI — fork the repo and submit your PRs. We build together. 
+
+---
 
 Sovereign Whisper Reader is designed for high-stakes, deep-focus reading environments where structure and privacy are paramount:
 - **Academic Researchers**: Synthesize densely multi-columned IEEE or Nature papers. The Gutter-Void resolver automatically ignores page numbers and sequences columns perfectly.
