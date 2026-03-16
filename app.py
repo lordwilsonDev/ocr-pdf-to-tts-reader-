@@ -3,8 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
-from .whisper_reader.agent import WhisperAgent
-from .database import init_db, SessionLocal, Document
+from whisper_reader.agent import WhisperAgent
+from database import init_db, SessionLocal, Document
 
 app = FastAPI(title="Sovereign Whisper Reader API")
 
@@ -70,8 +70,9 @@ async def resume_reading():
 async def get_status():
     return {"status": agent.status, "index": agent.current_index}
 
-# Mount UI
-app.mount("/", StaticFiles(directory="ui", html=True), name="ui")
+# Mount the new React Vite HUD
+# The 'dist' folder is created when we run 'npm run build' inside 'swr-hud'
+app.mount("/", StaticFiles(directory="swr-hud/dist", html=True), name="swr-hud")
 
 if __name__ == "__main__":
     import uvicorn
